@@ -1,0 +1,93 @@
+
+  llama-cli \
+  -m ~/models/qwen3-14b-gguf/Qwen3-14B-Q5_K_M.gguf \
+  -p "Explain what an LLM token is in one paragraph." \
+  -n 200 \
+  -c 4096 \
+  -ngl 99
+
+.38555
+.39
+
+
+llama-cli                         run the program
+-m model.gguf                     load this GGUF model
+-p "..."                          prompt text
+-n 200                            generate up to 200 tokens
+-c 4096                           context window for this run
+-ngl 99                           offload layers to GPU/Metal
+
+
+
+Layer Check:
+mu@Ms-MacBook-Pro ~ % ~/llama.cpp/build/bin/llama-server \
+  -m ~/models/qwen3-14b-gguf/Qwen3-14B-Q5_K_M.gguf \
+  -c 4096 \
+  -ngl 99 \
+  -lv 4
+
+
+0.00.576.170 I load_tensors: offloading 39 repeating layers to GPU
+0.00.576.170 I load_tensors: offloaded 41/41 layers to GPU
+
+41 layers for Qwen3-14B-Q5_K_M
+
+
+Lower n values produces less output tokens
+
+Lower ngl makes the output a lot slower
+
+
+FP32: 0.38492817   ← 32-bit float, bigger, more precise
+FP16: 0.3849       ← 16-bit float, smaller, still high precision
+Q8:   ~0.385       ← 8-bit quantized
+Q5:   rougher
+Q4:   rougher
+
+
+
+Temperature
+
+~/llama.cpp/build/bin/llama-cli \
+  -m ~/models/qwen3-14b-gguf/Qwen3-14B-Q5_K_M.gguf \
+  -p "Write one sentence about New York City." \
+  -n 80 \
+  -c 2048 \
+  -ngl 99 \
+  -b 256 \
+  -ub 64 \
+  --temp 2.0
+
+
+~/llama.cpp/build/bin/llama-cli \
+  -m ~/models/qwen3-14b-gguf/Qwen3-14B-Q5_K_M.gguf \
+  -p "Explain KV cache in one sentence." \
+  -n 80 \
+  -c 2048 \
+  -ngl 99 \
+  -b 256 \
+  -ub 64 \
+  -lv 4
+
+Prompt: "Explain tokens simply."
+
+Phase 1: Prefill
+The model processes all prompt tokens.
+
+Phase 2: Decode
+The model generates the response one token at a time.
+
+
+KV Cache:
+
+Memory allocation
+llama_kv_cache:       MTL0 KV buffer size =   640.00 MiB
+
+llama_kv_cache: size =  640.00 MiB (  4096 cells,  40 layers,  1/1 seqs), K (f16):  320.00 MiB, V (f16):  320.00 MiB
+
+
+K cache: [0.013, -0.224, 0.781, ...]
+V cache: [-0.091, 0.442, -0.005, ...]
+
+
+save/restore slot KV cache to disk:

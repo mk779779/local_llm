@@ -1,0 +1,16 @@
+[project]
+name = "llm-local"
+version = "0.1.0"
+description = "Minimal local OpenAI-compatible client script."
+requires-python = ">=3.14,<4.0"
+dependencies = [
+    "openai>=1.0,<2.0",
+    "llama-cpp-python (>=0.3.33,<0.4.0)",
+]
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"
