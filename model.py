@@ -1,6 +1,6 @@
 from pathlib import Path
-from time import perf_counter
 from llama_cpp import Llama, LlamaRAMCache
+from dataclasses import dataclass, field
 
 MODEL_PATH = Path.home() / "models" / "qwen3-14b-gguf" / "Qwen3-14B-Q5_K_M.gguf"
 
@@ -15,53 +15,48 @@ llm = Llama(
 
 llm.set_cache(LlamaRAMCache(capacity_bytes=2 * 1024**3))
 
-STABLE_PREFIX = (
-    """
-You are a local LLM tutor.
 
-Rules:
-- Explain concepts clearly.
-- Use concrete examples.
-- Keep answers concise.
-
-Technical background:
-- KV cache stores attention keys and values.
-- Prefill processes input tokens.
-- Decode generates new tokens one at a time.
-"""
-    * 10
-)
-
-
-def run_model(question: str, stream: bool = False) -> None:
-
-    prompt = STABLE_PREFIX + f"\nUser: {question}\n" + "Assistant:"
-
-    started = perf_counter()
-
-    output = llm(
-        prompt,
-        max_tokens=64,
-        echo=False,
-        stream=stream,
+@dataclass
+class LlamaService:
+    model_path: Path = (
+        Path.home() / "models" / "qwen3-14b-gguf" / "Qwen3-14B-Q5_K_M.gguf"
     )
-    if stream:
+
+    n_ct: int = 6000
+    n_gpu_layers: int = 1
+    verbose: bool = False
+    llm: Llama = field(init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        self.llm = Llama(
+            model_path=str(MODEL_PATH),
+            n_ctx=6000,
+            n_gpu_layers=1,
+            verbose=False,
+        )
+
+    def generate_text(prompt: str, max_tokens: int = 200) -> str:
+        output = llm(prompt, max_tokens=max_tokens, echo=False, stream=False)
+
+        return output["choices"][0]["text"].strip()
+
+    def stream_text(prompt: str, max_tokens: int = 200):
+        output = llm(
+            prompt,
+            max_tokens=max_tokens,
+            echo=False,
+            stream=True,
+        )
         for chunk in output:
             text = chunk["choices"][0]["text"]
-            print(text, end="", flush=True)
-        print()
-
-    else:
-        print(output["choices"][0]["text"].strip())
-
-    elapsed = perf_counter() - started
-    print("time_spent", elapsed)
+            if text:
+                yield text
 
 
 def main():
-    run_model("What is KV cache?")
-    run_model("What is KV cache?")
-    run_model("What is decode?")
+
+    llm = LlamaService()
+    llm.stream_text("What is KV cache?")
 
 
 if __name__ == "__main__":
