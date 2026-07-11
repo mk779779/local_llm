@@ -10,15 +10,13 @@ SYSTEM_PROMPT_PATH = Path(__file__).parent / "prompts" / "system.md"
 @dataclass
 class LlamaService:
     model_path: Path = MODEL_PATH
-    system_prompt_path: Path = SYSTEM_PROMPT_PATH
     n_ctx: int = 6000
     n_gpu_layers: int = 1
     verbose: bool = False
-    system_prompt: str = field(init=False, repr=False)
+    system_prompt: str = ""
     llm: Llama = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
-        self.system_prompt = self.system_prompt_path.read_text(encoding="utf-8").strip()
         self.llm = Llama(
             model_path=str(self.model_path),
             n_ctx=self.n_ctx,
