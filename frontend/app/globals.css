@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 221 73% 6%;
+    --foreground: 210 40% 96%;
+    --card: 217 68% 10%;
+    --card-foreground: 210 40% 96%;
+    --popover: 217 68% 10%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 48 100% 59%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 199 89% 17%;
+    --secondary-foreground: 183 100% 92%;
+    --muted: 216 45% 16%;
+    --muted-foreground: 214 18% 72%;
+    --accent: 183 100% 50%;
+    --accent-foreground: 222 47% 11%;
+    --border: 190 78% 34%;
+    --input: 214 50% 25%;
+    --ring: 183 100% 50%;
+    --font-display: "Orbitron", "Bank Gothic", "Eurostile", "Segoe UI", sans-serif;
+    --font-mono: "Share Tech Mono", "IBM Plex Mono", "SFMono-Regular", "Consolas", monospace;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply min-h-screen bg-background bg-city-glow font-mono text-foreground antialiased;
+  }
+}
+
+@layer utilities {
+  .grid-overlay {
+    background-image:
+      linear-gradient(rgba(34, 211, 238, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34, 211, 238, 0.08) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.92), transparent);
+  }
+
+  .scanline {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scanline::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(250, 204, 21, 0.05) 48%,
+      transparent 100%
+    );
+    background-size: 100% 6px;
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+
+  .clip-corner {
+    clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
+  }
+}

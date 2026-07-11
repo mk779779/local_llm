@@ -9,7 +9,7 @@ llm = LlamaService()
 
 
 class GenerateRequest(BaseModel):
-    question: str
+    prompt: str
     max_tokens: int = 128
 
 

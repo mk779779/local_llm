@@ -27,3 +27,8 @@ dist/
 
 # macOS/editor noise
 .DS_Store
+
+# Next.js frontend artifacts
+frontend/node_modules/
+frontend/.next/
+frontend/out/

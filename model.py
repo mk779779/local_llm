@@ -35,12 +35,12 @@ class LlamaService:
             verbose=False,
         )
 
-    def generate_text(prompt: str, max_tokens: int = 200) -> str:
+    def generate_text(self, prompt: str, max_tokens: int = 200) -> str:
         output = llm(prompt, max_tokens=max_tokens, echo=False, stream=False)
 
         return output["choices"][0]["text"].strip()
 
-    def stream_text(prompt: str, max_tokens: int = 200):
+    def stream_text(self, prompt: str, max_tokens: int = 200):
         output = llm(
             prompt,
             max_tokens=max_tokens,
