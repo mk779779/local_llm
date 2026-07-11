@@ -60,13 +60,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const data = (await response.json()) as Record<string, unknown>;
-    const output =
-      typeof data.output === "string"
-        ? data.output
-        : typeof data["output:"] === "string"
-          ? data["output:"]
-          : "";
+    const payload = (await response.json()) as unknown;
+    const output = extractOutput(payload);
 
     if (!output.trim()) {
       return NextResponse.json(
@@ -87,4 +82,29 @@ export async function POST(request: Request) {
       { status: 502 },
     );
   }
+}
+
+function extractOutput(payload: unknown): string {
+  if (typeof payload === "string") {
+    return payload;
+  }
+
+  if (Array.isArray(payload)) {
+    const textEntry = payload.find((entry) => typeof entry === "string" && entry !== "output:");
+    return typeof textEntry === "string" ? textEntry : "";
+  }
+
+  if (payload && typeof payload === "object") {
+    const data = payload as Record<string, unknown>;
+
+    if (typeof data.output === "string") {
+      return data.output;
+    }
+
+    if (typeof data["output:"] === "string") {
+      return data["output:"];
+    }
+  }
+
+  return "";
 }

@@ -1,19 +1,23 @@
 "use client";
 
-import { Bot, Cpu, Radio, SendHorizonal, Shield, Sparkles, Trash2, User, Zap } from "lucide-react";
+import {
+  ChevronDown,
+  CirclePlus,
+  Folder,
+  Grid2x2,
+  Mic,
+  MoreHorizontal,
+  MonitorSmartphone,
+  Search,
+  Send,
+  SquarePen,
+  FlaskConical,
+  BookOpenText,
+  Download,
+} from "lucide-react";
 import { useEffect, useRef, useState, useTransition } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -24,26 +28,16 @@ type Message = {
   timestamp: string;
 };
 
-const quickPrompts = [
-  "Plan a stealth data-exfiltration workflow for an internal docs agent.",
-  "Summarize a long incident report into a clean executive briefing.",
-  "Design a tool-using research agent with memory, retries, and safety checks.",
+const sidebarItems = [
+  { icon: Search, label: "Search" },
+  { icon: Folder, label: "Projects" },
+  { icon: Grid2x2, label: "Hub" },
 ];
 
-const starterMessages: Message[] = [
-  {
-    id: "boot-sequence",
-    role: "assistant",
-    content:
-      "Afterlife Link is online. Drop a target, a question, or an objective and I’ll spin up a route through the noise.",
-    timestamp: "Booted now",
-  },
-];
-
-const telemetry = [
-  { label: "Model bridge", value: "FastAPI relay" },
-  { label: "City node", value: "Night City East" },
-  { label: "Threat profile", value: "Low / monitored" },
+const trainItems = [
+  { icon: FlaskConical, label: "Train" },
+  { icon: BookOpenText, label: "Recipes" },
+  { icon: Download, label: "Export" },
 ];
 
 function createMessage(role: Message["role"], content: string): Message {
@@ -59,13 +53,13 @@ function createMessage(role: Message["role"], content: string): Message {
 }
 
 export function AgentConsole() {
-  const [messages, setMessages] = useState<Message[]>(starterMessages);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [prompt, setPrompt] = useState("");
-  const [maxTokens, setMaxTokens] = useState("256");
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const maxTokens = 256;
 
   useEffect(() => {
     transcriptRef.current?.scrollTo({
@@ -99,7 +93,7 @@ export function AgentConsole() {
     setPrompt("");
 
     if (textareaRef.current) {
-      textareaRef.current.style.height = "88px";
+      textareaRef.current.style.height = "56px";
     }
 
     startTransition(() => {
@@ -117,7 +111,7 @@ export function AgentConsole() {
             role,
             content: messageContent,
           })),
-          maxTokens: Number(maxTokens) || 256,
+          maxTokens,
         }),
       });
 
@@ -138,240 +132,252 @@ export function AgentConsole() {
     }
   }
 
-  return (
-    <main className="relative min-h-screen overflow-hidden px-4 py-6 text-foreground sm:px-6 lg:px-10">
-      <div className="pointer-events-none absolute inset-0 grid-overlay opacity-70" />
-      <div className="pointer-events-none absolute -top-20 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-primary/15 blur-3xl" />
-      <div className="pointer-events-none absolute right-0 top-24 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
+  const isEmpty = messages.length === 0;
 
-      <section className="relative mx-auto flex w-full max-w-7xl flex-col gap-6">
-        <header className="animate-rise rounded-3xl border border-primary/30 bg-slate-950/50 p-4 shadow-neon backdrop-blur-xl">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <Badge>Afterlife Link</Badge>
-                <Badge variant="secondary" className="animate-pulseLine">
-                  Agent Console
-                </Badge>
-              </div>
-              <div>
-                <h1 className="font-display text-3xl uppercase tracking-[0.3em] text-primary sm:text-4xl">
-                  Night City Relay
-                </h1>
-                <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
-                  A cyberpunk 2077 inspired frontend for your local LLM agent stack, with a Shadcn-style
-                  component system and a clean bridge to FastAPI.
-                </p>
+  return (
+    <main className="app-shell min-h-screen text-foreground">
+      <div className="grid min-h-screen lg:grid-cols-[420px_minmax(0,1fr)]">
+        <aside className="hidden border-r border-border/80 bg-white/78 lg:flex lg:flex-col">
+          <div className="flex items-center justify-between px-5 py-7">
+            <div className="flex items-center gap-3">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-xl font-semibold text-white shadow-sm">
+                A
               </div>
             </div>
+            <button
+              type="button"
+              className="rounded-xl border border-border bg-white p-2 text-muted-foreground transition hover:text-foreground"
+              aria-label="Sidebar mode"
+            >
+              <MonitorSmartphone className="h-4 w-4" />
+            </button>
+          </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
-              {telemetry.map((item) => (
-                <div
+          <div className="px-3">
+            <button
+              type="button"
+              onClick={() => {
+                setMessages([]);
+                setError("");
+              }}
+              className="flex w-full items-center gap-3 rounded-[1.7rem] bg-slate-100 px-6 py-3.5 text-left text-[1.1rem] font-medium text-slate-950 transition hover:bg-slate-200/80"
+            >
+              <SquarePen className="h-4 w-4" />
+              New chat
+            </button>
+          </div>
+
+          <nav className="mt-4 space-y-1 px-3">
+            {sidebarItems.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                className="flex w-full items-center gap-3 rounded-2xl px-5 py-3 text-left text-[1.1rem] text-slate-700 transition hover:bg-white hover:text-slate-950"
+              >
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="mt-10 px-5 text-sm text-muted-foreground">
+            <p className="mb-5 text-[1.05rem] font-medium text-slate-500">Train</p>
+            <div className="space-y-1">
+              {trainItems.map((item) => (
+                <button
                   key={item.label}
-                  className="clip-corner border border-cyan-400/25 bg-slate-950/70 px-4 py-3"
+                  type="button"
+                  className="flex w-full items-center gap-3 rounded-2xl px-5 py-3 text-left text-[1.1rem] text-slate-700 transition hover:bg-white hover:text-slate-950"
                 >
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-300/70">
-                    {item.label}
-                  </p>
-                  <p className="mt-2 font-display text-sm uppercase tracking-[0.18em] text-slate-100">
-                    {item.value}
-                  </p>
-                </div>
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </button>
               ))}
             </div>
           </div>
-        </header>
 
-        <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
-          <aside className="space-y-6">
-            <Card className="scanline animate-rise">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Shield className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-lg text-primary">Mission Deck</CardTitle>
-                </div>
-                <CardDescription>
-                  Focus the agent before you dive into a run.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {quickPrompts.map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => void submitPrompt(item)}
-                    className="w-full rounded-xl border border-border/80 bg-background/40 px-4 py-3 text-left text-sm text-muted-foreground transition hover:border-primary/60 hover:bg-primary/10 hover:text-foreground"
-                  >
-                    {item}
-                  </button>
-                ))}
-              </CardContent>
-            </Card>
+          <div className="mt-10 px-5 text-sm text-muted-foreground">
+            <p className="mb-5 text-[1.05rem] font-medium text-slate-500">Recents</p>
+            <div className="space-y-3">
+              {messages.length === 0 ? (
+                <p className="text-[1rem]">No chats yet</p>
+              ) : (
+                messages
+                  .filter((message) => message.role === "user")
+                  .slice(-3)
+                  .reverse()
+                  .map((message) => (
+                    <div
+                      key={message.id}
+                      className="rounded-2xl bg-white/80 px-4 py-3 text-sm text-slate-700"
+                    >
+                      <p className="truncate">{message.content}</p>
+                    </div>
+                  ))
+              )}
+            </div>
+          </div>
+        </aside>
 
-            <Card className="scanline animate-rise [animation-delay:120ms]">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Cpu className="h-5 w-5 text-cyan-300" />
-                  <CardTitle className="text-lg text-cyan-300">Runtime</CardTitle>
-                </div>
-                <CardDescription>Live knobs for the chat loop.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="max-tokens"
-                    className="text-xs uppercase tracking-[0.2em] text-muted-foreground"
-                  >
-                    Max tokens
-                  </label>
-                  <Input
-                    id="max-tokens"
-                    inputMode="numeric"
-                    value={maxTokens}
-                    onChange={(event) => setMaxTokens(event.target.value)}
-                  />
-                </div>
+        <section className="flex min-h-screen flex-col">
+          <header className="flex items-center justify-between px-8 py-6 lg:px-10">
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 rounded-xl px-2 py-1 text-[2rem] font-medium tracking-tight text-slate-950"
+            >
+              Select model
+              <ChevronDown className="h-5 w-5 text-slate-500" />
+            </button>
 
-                <Separator />
-
-                <div className="space-y-3 text-sm text-muted-foreground">
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2">
-                      <Radio className="h-4 w-4 text-cyan-300" />
-                      Relay status
-                    </span>
-                    <span className="text-cyan-300">Armed</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2">
-                      <Zap className="h-4 w-4 text-primary" />
-                      Response mode
-                    </span>
-                    <span className="text-primary">Direct</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-fuchsia-300" />
-                      Persona shell
-                    </span>
-                    <span className="text-fuchsia-300">Netrunner</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </aside>
-
-          <Card className="scanline animate-rise [animation-delay:180ms]">
-            <CardHeader className="border-b border-border/70">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <CardTitle className="text-xl text-primary">Conversation Rail</CardTitle>
-                  <CardDescription>
-                    Talk to the agent, inspect the transcript, and keep the run moving.
-                  </CardDescription>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Badge variant="muted">{messages.length} transcript nodes</Badge>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setMessages(starterMessages);
-                      setError("");
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Clear
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-
-            <CardContent className="flex flex-col gap-4 p-4 sm:p-6">
-              <div
-                ref={transcriptRef}
-                className="max-h-[56vh] space-y-4 overflow-y-auto pr-1"
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="rounded-xl p-2 text-muted-foreground transition hover:bg-white hover:text-foreground"
+                aria-label="More"
               >
+                <MoreHorizontal className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                className="rounded-xl p-2 text-muted-foreground transition hover:bg-white hover:text-foreground"
+                aria-label="Window mode"
+              >
+                <MonitorSmartphone className="h-5 w-5" />
+              </button>
+            </div>
+          </header>
+
+          <div
+            ref={transcriptRef}
+            className={cn(
+              "flex-1 overflow-y-auto px-6 pb-8 lg:px-10",
+              isEmpty ? "flex items-center justify-center" : "",
+            )}
+          >
+            {isEmpty ? (
+              <div className="flex w-full max-w-[1220px] flex-col items-center justify-center pb-24">
+                <Composer
+                  prompt={prompt}
+                  onPromptChange={resizeTextarea}
+                  onSubmit={() => void submitPrompt(prompt)}
+                  isPending={isPending}
+                  textareaRef={textareaRef}
+                />
+              </div>
+            ) : (
+              <div className="mx-auto flex w-full max-w-[1220px] flex-col gap-6 pb-40 pt-4">
                 {messages.map((message) => (
                   <article
                     key={message.id}
                     className={cn(
-                      "clip-corner animate-rise rounded-2xl border p-4",
-                      message.role === "assistant"
-                        ? "mr-6 border-cyan-400/30 bg-cyan-400/8"
-                        : "ml-6 border-primary/30 bg-primary/10",
+                      "max-w-[85%] rounded-3xl px-5 py-4 shadow-sm",
+                      message.role === "user"
+                        ? "ml-auto bg-emerald-500 text-white"
+                        : "bg-white text-slate-900",
                     )}
                   >
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <span className="inline-flex items-center gap-2 font-display text-xs uppercase tracking-[0.28em] text-slate-100">
-                        {message.role === "assistant" ? (
-                          <Bot className="h-4 w-4 text-cyan-300" />
-                        ) : (
-                          <User className="h-4 w-4 text-primary" />
-                        )}
-                        {message.role === "assistant" ? "Link AI" : "Operator"}
-                      </span>
-                      <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                        {message.timestamp}
-                      </span>
-                    </div>
-                    <p className="whitespace-pre-wrap text-sm leading-7 text-slate-100/95">
+                    <p className="whitespace-pre-wrap text-[15px] leading-7">
                       {message.content}
+                    </p>
+                    <p
+                      className={cn(
+                        "mt-3 text-xs",
+                        message.role === "user" ? "text-emerald-50/90" : "text-slate-400",
+                      )}
+                    >
+                      {message.timestamp}
                     </p>
                   </article>
                 ))}
 
                 {isPending ? (
-                  <article className="clip-corner mr-6 rounded-2xl border border-cyan-400/30 bg-cyan-400/8 p-4">
-                    <div className="mb-3 flex items-center gap-2 font-display text-xs uppercase tracking-[0.28em] text-cyan-300">
-                      <Bot className="h-4 w-4" />
-                      Link AI
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                      Processing the shard...
-                    </div>
-                  </article>
+                  <div className="max-w-[85%] rounded-3xl bg-white px-5 py-4 text-slate-500 shadow-sm">
+                    Thinking...
+                  </div>
+                ) : null}
+
+                {error ? (
+                  <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                    {error}
+                  </div>
                 ) : null}
               </div>
+            )}
+          </div>
 
-              {error ? (
-                <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-                  {error}
-                </div>
-              ) : null}
-
-              <form
-                className="space-y-4 rounded-2xl border border-primary/20 bg-slate-950/50 p-4"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  void submitPrompt(prompt);
-                }}
-              >
-                <Textarea
-                  ref={textareaRef}
-                  value={prompt}
-                  onChange={(event) => resizeTextarea(event.target.value)}
-                  placeholder="Feed the relay an objective, file summary request, or agent task..."
-                  className="max-h-72 resize-none"
+          {!isEmpty ? (
+            <div className="sticky bottom-0 px-6 pb-8 pt-4 lg:px-10">
+              <div className="mx-auto max-w-[1220px]">
+                <Composer
+                  prompt={prompt}
+                  onPromptChange={resizeTextarea}
+                  onSubmit={() => void submitPrompt(prompt)}
+                  isPending={isPending}
+                  textareaRef={textareaRef}
                 />
-
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                    Secure rail routed through <code>/api/chat</code>
-                  </p>
-                  <Button type="submit" disabled={isPending || !prompt.trim()}>
-                    <SendHorizonal className="h-4 w-4" />
-                    Dispatch
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
+              </div>
+            </div>
+          ) : null}
+        </section>
+      </div>
     </main>
+  );
+}
+
+function Composer({
+  prompt,
+  onPromptChange,
+  onSubmit,
+  isPending,
+  textareaRef,
+}: {
+  prompt: string;
+  onPromptChange: (value: string) => void;
+  onSubmit: () => void;
+  isPending: boolean;
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+}) {
+  return (
+    <form
+      className="w-full rounded-[2.2rem] bg-white px-6 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.08)]"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit();
+      }}
+    >
+      <div className="flex items-end gap-3">
+        <button
+          type="button"
+          className="mb-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+          aria-label="Add attachment"
+        >
+          <CirclePlus className="h-6 w-6" />
+        </button>
+
+        <Textarea
+          ref={textareaRef}
+          value={prompt}
+          onChange={(event) => onPromptChange(event.target.value)}
+          placeholder="Ask anything"
+          className="min-h-[56px] max-h-56 resize-none border-none bg-transparent px-0 py-3 text-[1.15rem] text-slate-900 shadow-none focus-visible:ring-0"
+        />
+
+        <button
+          type="button"
+          className="mb-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+          aria-label="Voice input"
+        >
+          <Mic className="h-5 w-5" />
+        </button>
+
+        <Button
+          type="submit"
+          disabled={isPending || !prompt.trim()}
+          className="mb-1 h-12 w-12 rounded-full border-none bg-emerald-300 p-0 text-white shadow-none hover:bg-emerald-400"
+        >
+          <Send className="h-5 w-5" />
+        </Button>
+      </div>
+    </form>
   );
 }
