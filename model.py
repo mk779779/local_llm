@@ -11,7 +11,7 @@ SYSTEM_PROMPT_PATH = Path(__file__).parent / "prompts" / "system.md"
 class LlamaService:
     model_path: Path = MODEL_PATH
     n_ctx: int = 6000
-    n_gpu_layers: int = 1
+    n_gpu_layers: int = 99
     verbose: bool = False
     system_prompt: str = ""
     llm: Llama = field(init=False, repr=False)

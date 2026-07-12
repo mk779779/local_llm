@@ -24,6 +24,7 @@ dist/
 # Local environment files
 .env
 .env.*
+!**/.env.example
 
 # macOS/editor noise
 .DS_Store
@@ -32,3 +33,6 @@ dist/
 frontend/node_modules/
 frontend/.next/
 frontend/out/
+
+
+logs/
