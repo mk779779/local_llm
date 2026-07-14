@@ -10,22 +10,29 @@ run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
 model_log = log_dir / f"llama_{run_id}.log"
 
 db = SQliteChatStore()
-
-with model_log.open("a", encoding="utf-8") as stderr_files:
-    with redirect_stderr(stderr_files):
-        llm = LlamaService(verbose=True)
-        prompt = "what is 2 + 2"
-        output = llm.generate_text(prompt)
-        print("type:", type(output))
-        print("output:", output)
+llm = LlamaService(verbose=True)
 
 
-text = output["choices"][0]["text"]
-print("text:", text)
-print("text_type:", type(text))
-session_id = db.create_session()
-print("session_id_type", type(session_id))
-db.add_message(session_id, "user", prompt)
-db.add_message(session_id, "assistant", text)
+def generate_with_logs(prompt: str) -> str:
+    with model_log.open("a", encoding="utf-8") as stderr_files:
+        with redirect_stderr(stderr_files):
+            return llm.generate_text(prompt)
 
-print("get_messages", db.get_messages(session_id))
+
+def save_chat(session_id: int, prompt: str, response: str):
+    db.add_message(session_id, "user", prompt)
+    db.add_message(session_id, "assistant", response)
+
+
+def run_model(prompt: str, session_id: id):
+    if not session_id:
+        session_id = db.create_session()
+
+    output = generate_with_logs
+    response = output["choices"][0]["text"]
+    save_chat(session_id, prompt, response)
+
+    print("get_messages", db.get_messages(session_id))
+
+
+run_model("what is 1+ 2")
