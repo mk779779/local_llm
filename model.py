@@ -37,7 +37,7 @@ class LlamaService:
             stream=False,
         )
 
-        return output["choices"][0]["text"].strip()
+        return output
 
     def stream_text(self, prompt: str, max_tokens: int = 200):
         output = self.llm(
