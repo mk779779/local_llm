@@ -113,11 +113,11 @@ def call_tool(name: str, arguments: Any) -> Any:
     return tool(arguments)
 
 
-def runner(prompt: str):
+def runner(prompt: str, max_iterations: int = 5):
     llm = LlamaService(verbose=False)
     messages = llm.build_messages(prompt)
 
-    for _ in range(5):
+    for _ in range(max_iterations):
         response = llm.generate_response(messages, tools=TOOL_SCHEMAS)
         message = response["choices"][0]["message"]
         content = message.get("content") or ""
