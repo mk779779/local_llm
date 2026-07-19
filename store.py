@@ -1,6 +1,7 @@
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
+import uuid
 
 
 @dataclass
@@ -16,7 +17,7 @@ class SQliteChatStore:
         self.conn.execute(
             """
         CREATE TABLE IF NOT EXISTS chat_sessions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id TEXT PRIMARY KEY,
             title TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -27,8 +28,8 @@ class SQliteChatStore:
         self.conn.execute(
             """
         CREATE TABLE IF NOT EXISTS chat_messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            session_id INTEGER NOT NULL,
+            id TEXT PRIMARY KEY,
+            session_id TEXT NOT NULL,
             role TEXT NOT NULL,
             content TEXT NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -40,20 +41,26 @@ class SQliteChatStore:
         self.conn.commit()
 
     def create_session(self, title: str | None = None) -> int:
+        session_id = uuid.uuid4().hex
         cursor = self.conn.execute(
-            "INSERT INTO chat_sessions (title) VALUES (?)", (title,)
+            "INSERT INTO chat_sessions (id, title) VALUES (?, ?)",
+            (
+                session_id,
+                title,
+            ),
         )
         self.conn.commit()
         return int(cursor.lastrowid)
 
     def add_message(self, session_id: int, role: str, content: str) -> int:
+        chat_id = uuid.uuid4().hex
         try:
             cursor = self.conn.execute(
                 """
-            INSERT INTO chat_messages (session_id, role, content)
+            INSERT INTO chat_messages (id,session_id, role, content)
             VALUES (?, ?, ?)
             """,
-                (session_id, role, content),
+                (chat_id, session_id, role, content),
             )
 
             self.conn.execute(
@@ -81,15 +88,5 @@ class SQliteChatStore:
         ORDER BY id ASC
         """,
             (session_id,),
-        )
-        return [dict(row) for row in cursor.fetchall()]
-
-    def list_sessions(self) -> list[dict]:
-        cursor = self.conn.execute(
-            """
-        SELECT id, title, created_at, updated_at
-        FROM chat_sessions
-        ORDER BY updated_at DESC
-        """
         )
         return [dict(row) for row in cursor.fetchall()]
