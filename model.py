@@ -1,10 +1,30 @@
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any, Callable
 
 from llama_cpp import Llama, LlamaRAMCache
 
 MODEL_PATH = Path.home() / "models" / "qwen3-14b-gguf" / "Qwen3-14B-Q5_K_M.gguf"
 SYSTEM_PROMPT_PATH = Path(__file__).parent / "prompts" / "system.md"
+
+
+def list_sessions() -> list[dict[str, Any]]:
+    return [{"id": 1, "title": "first_session"}]
+
+
+TOOLS: dict[str, Callable[..., Any]] = {"list_sessions": list_sessions}
+
+
+TOOL_SCHEMAS: list[dict[str, Any]] = [
+    {
+        "type": "function",
+        "function": {
+            "name": "list_sessions",
+            "description": "return all saved sessions",
+            "parameters": {"type": "object", "properties": {}, "required": []},
+        },
+    }
+]
 
 
 @dataclass
@@ -13,6 +33,7 @@ class LlamaService:
     n_ctx: int = 6000
     n_gpu_layers: int = 99
     verbose: bool = False
+
     system_prompt: str = ""
     llm: Llama = field(init=False, repr=False)
 
@@ -26,36 +47,33 @@ class LlamaService:
 
         self.llm.set_cache(LlamaRAMCache(capacity_bytes=2 * 1024**3))
 
-    def build_prompt(self, user_prompt: str) -> str:
-        return f"{self.system_prompt}\n\nUser: {user_prompt}\nAssistant:"
+    def build_messages(self, user_prompt: str) -> list[dict[str, Any]]:
+        return [
+            {"role": "system", "content": self.system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
 
-    def generate_text(self, prompt: str, max_tokens: int = 200) -> str:
-        output = self.llm(
-            self.build_prompt(prompt),
+    def generate_response(
+        self,
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]] | None = None,
+        max_tokens: int = 200,
+    ) -> dict[str, Any]:
+        return self.llm.create_chat_completion(
+            messages=messages,
             max_tokens=max_tokens,
-            echo=False,
+            temperature=0,
             stream=False,
+            tools=tools,
         )
-
-        return output
-
-    def stream_text(self, prompt: str, max_tokens: int = 200):
-        output = self.llm(
-            self.build_prompt(prompt),
-            max_tokens=max_tokens,
-            echo=False,
-            stream=True,
-        )
-        for chunk in output:
-            text = chunk["choices"][0]["text"]
-            if text:
-                yield text
 
 
 def main():
 
     llm = LlamaService()
-    print(llm.generate_text("What is KV cache?"))
+    messages = llm.build_messages("list all sessions")
+    response = llm.generate_response(messages, tools=TOOL_SCHEMAS)
+    print("response:", response)
 
 
 if __name__ == "__main__":
