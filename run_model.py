@@ -137,6 +137,7 @@ def runner(prompt: str, max_iterations: int = 5):
                         "content": json.dumps(result),
                     }
                 )
+
             continue
 
         text_tool_call = extract_text_tool_call(content)
@@ -149,7 +150,7 @@ def runner(prompt: str, max_iterations: int = 5):
             messages.append({"role": "assistant", "content": content})
             messages.append({"role": "tool", "content": json.dumps(result)})
             continue
-
+    print("messages:", messages)
     return content
 
 
