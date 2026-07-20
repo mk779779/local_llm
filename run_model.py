@@ -155,7 +155,7 @@ def runner(prompt: str, max_iterations: int = 5):
 
 
 def main() -> None:
-    print(runner("list all sessions"))
+    print(runner("Use Python to calculate the sum of the squares from 1 to 10."))
 
 
 if __name__ == "__main__":

@@ -1,22 +1,22 @@
 import subprocess
 import tempfile
 from pathlib import Path
-import sys
-
-PROFILE = """
-(version 1)
-
-(allow default)
-(allow process*)
-
-(deny network*)
-
-(deny file-write*)
-(allow file-write* (subpath "{workdir}"))
-"""
 
 
 def execute_python(code: str, timeout: int = 5) -> dict:
+
+    PROFILE = """
+    (version 1)
+
+    (allow default)
+    (allow process*)
+
+    (deny network*)
+
+    (deny file-write*)
+    (allow file-write* (subpath "{workdir}"))
+    """
+
     with tempfile.TemporaryDirectory(prefix="llm-code-") as tmp:
         workdir = Path(tmp).resolve()
         code_path = workdir / "main.py"
@@ -62,6 +62,6 @@ def execute_python(code: str, timeout: int = 5) -> dict:
             }
 
 
-input = {"code": "print(min([8, 3]))"}
+# input = {"code": "print(min([8, 3]))"}
 
-print(execute_python(input["code"]))
+# print(execute_python(input["code"]))
