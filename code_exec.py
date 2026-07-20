@@ -5,20 +5,14 @@ import sys
 
 PROFILE = """
 (version 1)
-(deny default)
 
+(allow default)
 (allow process*)
-(allow sysctl-read)
-
-(allow file-read* (subpath "/usr"))
-(allow file-read* (subpath "/bin"))
-(allow file-read* (subpath "/System"))
-(allow file-read* (subpath "/Library"))
-(allow file-read* (subpath "/opt/homebrew"))
-
-(allow file-read* file-write* (subpath "{workdir}"))
 
 (deny network*)
+
+(deny file-write*)
+(allow file-write* (subpath "{workdir}"))
 """
 
 
@@ -31,13 +25,15 @@ def execute_python(code: str, timeout: int = 5) -> dict:
         code_path.write_text(code, encoding="utf-8")
         profile_path.write_text(PROFILE.format(workdir=str(workdir)), encoding="utf-8")
 
+        PYTHON = "/opt/homebrew/bin/python3"
+
         try:
             result = subprocess.run(
                 [
                     "sandbox-exec",
                     "-f",
                     str(profile_path),
-                    sys.executable,
+                    PYTHON,
                     str(code_path),
                 ],
                 cwd=workdir,
